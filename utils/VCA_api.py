@@ -70,12 +70,11 @@ class VCA:
         print(f"입력된 이벤트 번호 : {event_num} \n 이벤트 메시지 : {event_msg}")
         
         ## 현재 시간 문자열 생성
-        event_time = datetime.now().strftime("%y-%m-%d %H:%M:%S.%f")[:-3]
+        event_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
         print(f"이벤트 발생 시간 : {event_time}")
         ## post API body json
         json_payload = json.dumps({
-            "dev_serial": 100004,
-            "dch_ch": 1,
+            "camera_id": "100004_3",
             "event_id": event_num,
             "event_time": event_time,
             "event_msg": event_msg,
@@ -104,9 +103,24 @@ class VCA:
         )
         
         if result.returncode == 0:
+            try:
+                # curl의 응답에서 JSON만 추출 (stdout에 전체 내용이 포함될 수 있음)
+                response_text = result.stdout.strip()
+
+                # JSON 파싱 시도
+                response_json = json.loads(response_text)
+                self.logger.info(f"API Response: {json.dumps(response_json, ensure_ascii=False)}")
+                print("이벤트 전송 성공!")
+            except json.JSONDecodeError:
+                self.logger.warning("응답은 성공했지만 JSON 파싱에 실패했습니다.")
+                self.logger.debug(f"Raw response: {result.stdout}")
+                print("이벤트 전송 성공 (응답 파싱 실패)")
+            
             self.logger.info(f"event send complete")
             print("이벤트 전송 성공!")
         else:
             self.logger.error(f"command failed with return code {result.returncode}")
             self.logger.error(f"stderr: {result.stderr}")
             print("이벤트 전송 실패")
+            
+            
