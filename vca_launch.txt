@@ -1,0 +1,4 @@
+python VCA.py VCA \                                                
+-vu http://211.171.190.220:8080 \
+-vi admin \
+-vp 'admin'
